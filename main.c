@@ -15,6 +15,7 @@ long add_serial(const char *numbers) {
     }
     return sum;
 }
+
 long add_parallel(const char *numbers) {
     long Global_sum = 0;
     long local_Sum = 0;
@@ -22,23 +23,17 @@ long add_parallel(const char *numbers) {
     long my_first_i = 0;
     long my_last_i = 0;
     long size_of_thread = (long) round((Num_To_Add / num_of_threads) + .5);
-   
+    my_first_i = omp_get_thread_num() * size_of_thread;// thread id * size per thread
+    my_last_i = my_first_i + size_of_thread;// my first + size per thread
 
 
 #pragma omp parallel for reduction(+:local_Sum)
 
-    for (long j = 0; j < Num_To_Add; j++) {
-        local_Sum = 0;
-        my_first_i = omp_get_thread_num() * size_of_thread;// thread id * size per thread
-        my_last_i = my_first_i + size_of_thread;// my first + size per thread
-        for (long i = my_first_i; i < my_last_i; (i++)) {
-            local_Sum += numbers[i];
-        }
-
-# pragma omp critical
-        Global_sum = +local_Sum;
-        j += my_last_i;
+    for (long i = my_first_i; i < my_last_i; (i++)) {
+        local_Sum += numbers[i];
     }
+# pragma omp critical
+    Global_sum = +local_Sum;
     return Global_sum;
 }
 
